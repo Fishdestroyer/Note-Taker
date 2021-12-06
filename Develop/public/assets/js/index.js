@@ -1,7 +1,3 @@
-const express = require('express');
-const app = express();
-
-
 let noteTitle;
 let noteText;
 let saveNoteBtn;
@@ -184,8 +180,6 @@ if (window.location.pathname === '/notes') {
   noteText.addEventListener('keyup', handleRenderSaveBtn);
 }
 
-app.listen(3001, () => {
-  console.log(`API server now on port 3001!`);
-});
+
 
 getAndRenderNotes();
