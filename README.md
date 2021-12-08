@@ -21,6 +21,7 @@ THEN I am presented with empty fields to enter a new note title and the note’s
 
 # Credits and mentions
 Ask BCS
+Class TA's
+Google- mainly W3 Schools and MDN
 
-# Special thanks
 
