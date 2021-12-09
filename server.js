@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const note = require('./db/db.json');
+const notes = require('./db/db.json');
 
 
 const PORT = 3001;
@@ -22,7 +22,7 @@ app.get('/notes', (req, res) =>
 );
 
 app.get('/api/notes', (req, res) => {
-  res.json(`${req.method} request received to get notes`);
+  res.json(notes);
 
   console.info(`${req.method} request received to get notes`);
 });
@@ -83,22 +83,16 @@ app.post('/api/notes', (req, res) => {
   }
 });
 
-// GET request for upvotes
 app.get('/api/upvotes', (req, res) => {
-  // Inform the client
   res.json(`${req.method} request received to retrieve upvote count`);
-
-  // Log our request to the terminal
   console.info(`${req.method} request received to retrieve upvote count`);
 });
 
-// Post request to upvote a review
 app.post('/api/upvotes/:note_id', (req, res) => {
-  // Log our request to the terminal
   if (req.body && req.params.review_id && req.body.upvote) {
     console.info(`${req.method} request received to upvote a note`);
 
-    // Log the request body
+
     console.info(req.body);
 
     const noteId = req.params.note_id;
@@ -106,7 +100,6 @@ app.post('/api/upvotes/:note_id', (req, res) => {
 
     for (let i = 0; i < note.length; i++) {
       const currentNote = note[i];
-      // console.log(currentReview.review_id, reviewId);
       if (currentNote.note_id === noteId && requestedUpvote) {
         currentNote.upvotes += 1;
         res.json(`New upvote count is: ${currentNote.upvotes}`);
@@ -116,6 +109,7 @@ app.post('/api/upvotes/:note_id', (req, res) => {
     res.json('Note ID not found');
   }
 });
+
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT} 🚀`)
