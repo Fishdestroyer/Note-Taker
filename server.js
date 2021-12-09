@@ -1,58 +1,138 @@
 const express = require('express');
-const app = express();
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const reviews = require('./db/db.json');
+// Helper method for generating unique ids
+//const uuid = require('./helpers/uuid');
+
 const PORT = 3001;
+
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('develop-public'));
 
+app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, './develop/public/index.html'));
+app.get('/', (req, res) =>
+  res.sendFile(path.join(__dirname, '/public/index.html'))
+);
+
+app.get('/notes', (req, res) =>
+  res.sendFile(path.join(__dirname, '/public/notes.html'))
+);
+
+// GET request for reviews
+app.get('/api/notes', (req, res) => {
+  // Send a message to the client
+  res.json(`${req.method} request received to get notes`);
+
+  // Log our request to the terminal
+  console.info(`${req.method} request received to get notes`);
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, './develop/public/notes.html'));
+// GET request for a single review
+app.get('/api/notes/:note_id', (req, res) => {
+  if (req.body && req.params.note_id) {
+    console.info(`${req.method} request received to get a single a note`);
+    const noteId = req.params.note_id;
+    for (let i = 0; i < note.length; i++) {
+      const currentNote = note[i];
+      if (currentNote.note_id === noteId) {
+        res.json(currentNote);
+        return;
+      }
+    }
+    res.json('Note ID not found');
+  }
 });
 
-app.get('api/notes', (req, res) => {
-  res.json('${req.method} request received to get note');
-  console.info('${req.method} request received to get note');
-});
-
+// POST request to add a review
 app.post('/api/notes', (req, res) => {
+  // Log that a POST request was received
   console.info(`${req.method} request received to add a note`);
+
+  // Destructuring assignment for the items in req.body
+  const { title, text } = req.body;
+
+  // If all the required properties are present
+  if ( title && text ) {
+    // Variable for the object we will save
+    const newNote = {
+      title,
+      text,
+    };
+
+    //! Obtain existing reviews-----
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+      } else {
+        // Convert string into JSON object
+        const parsedNotes = JSON.parse(data);
+
+        // Add a new review
+        parsedNotes.push(newNote);
+    //! ------Obtain existing reviews
+
+        // Write updated reviews back to the file
+        fs.writeFile(
+          './db/db.json',
+          JSON.stringify(parsedNotes, null, 4),
+          (writeErr) =>
+            writeErr
+              ? console.error(writeErr)
+              : console.info('Successfully updated notes!')
+        );
+      }
+    });
+
+    const response = {
+      status: 'success',
+      body: newNote,
+    };
+
+    console.log(response);
+    res.json(response);
+  } else {
+    res.json('Error in posting note');
+  }
 });
 
+// GET request for upvotes
+app.get('/api/upvotes', (req, res) => {
+  // Inform the client
+  res.json(`${req.method} request received to retrieve upvote count`);
 
-  const getNotes = () =>
-  fetch('/api/notes', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  // Log our request to the terminal
+  console.info(`${req.method} request received to retrieve upvote count`);
+});
 
-const saveNote = (note) =>
-  fetch('/api/notes', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(note),
-  });
+// Post request to upvote a review
+app.post('/api/upvotes/:note_id', (req, res) => {
+  // Log our request to the terminal
+  if (req.body && req.params.review_id && req.body.upvote) {
+    console.info(`${req.method} request received to upvote a note`);
 
-const deleteNote = (id) =>
-  fetch(`/api/notes/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+    // Log the request body
+    console.info(req.body);
 
+    const noteId = req.params.note_id;
+    const requestedUpvote = req.body.upvote;
 
-app.listen(3001, () => {
-    console.log(`API server now on port 3001!`);
-  });
+    for (let i = 0; i < note.length; i++) {
+      const currentNote = note[i];
+      // console.log(currentReview.review_id, reviewId);
+      if (currentNote.note_id === noteId && requestedUpvote) {
+        currentNote.upvotes += 1;
+        res.json(`New upvote count is: ${currentNote.upvotes}`);
+        return;
+      }
+    }
+    res.json('Note ID not found');
+  }
+});
+
+app.listen(PORT, () =>
+  console.log(`App listening at http://localhost:${PORT} 🚀`)
+);
